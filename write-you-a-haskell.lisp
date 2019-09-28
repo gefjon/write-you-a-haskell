@@ -1,0 +1,10 @@
+(in-package :write-you-a-haskell)
+
+(defparameter *a* (make-type-variable 'a))
+(defparameter *b* (make-type-variable 'b))
+(defparameter *a->a* (make--> *a* *a*))
+(defparameter *a->b* (make--> *a* *b*))
+(defparameter *b=boolean* (acons *b* *boolean* ()))
+(defparameter *a=fixnum* (acons *a* *fixnum* ()))
+(defparameter *identity-function-scheme* (make-forall (list *a*) (make--> *a* *a*)))
+(defparameter *identity-type-scheme* (make-forall (list *a*) *a*))
