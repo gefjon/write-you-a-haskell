@@ -32,3 +32,9 @@
 (defmethod free-type-variables ((within null))
   (declare (ignorable within))
   ())
+
+;;; implementation for TYPE-ENV
+
+(defmethod free-type-variables ((within type-env))
+  (iter (for (key . value) in (type-env-alist within))
+        (unioning (free-type-variables value))))

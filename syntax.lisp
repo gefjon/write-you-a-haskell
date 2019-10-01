@@ -4,15 +4,15 @@
   '(or fixnum boolean))
 
 (deftype operator ()
-  '(member hm:+ hm:- hm:* hm:/))
+  '(member hm:+ hm:- hm:* hm:/ hm:=))
 
 (defenum expr
     (hm:variable ((name symbol)))
   (hm:funcall ((function expr)
                (arg expr)))
-  (hm:lambda ((binding symbol)
+  (hm:lambda ((binding hm:variable)
               (body expr)))
-  (hm:let ((binding symbol)
+  (hm:let ((binding hm:variable)
            (value expr)
            (body expr)))
   (hm:quote ((it literal)))

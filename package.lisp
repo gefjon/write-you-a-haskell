@@ -13,6 +13,7 @@
            :-
            :*
            :/
+           :=
            :def
            :type
            :type-variable

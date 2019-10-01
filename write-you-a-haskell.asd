@@ -20,4 +20,5 @@
                (:file "free-type-variables")
                (:file "unify")
                (:file "instantiate-generalize")
+               (:file "infer")
                (:file "write-you-a-haskell")))

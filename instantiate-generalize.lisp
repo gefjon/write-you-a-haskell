@@ -13,4 +13,6 @@
 (declaim (ftype (function (type-env hm:type) type-scheme)
                 generalize))
 (defun generalize (env type)
-  (make-forall (set-difference (free-type-variables type))))
+  (make-forall (set-difference (free-type-variables type)
+                               (free-type-variables env))
+               type))

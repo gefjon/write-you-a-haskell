@@ -13,7 +13,8 @@
          (error "cannot substitute ~a for infinite type ~a" tvar type))
         ('otherwise (singleton-subst tvar type))))
 
-(defgeneric unify (lhs rhs))
+(defgeneric unify (lhs rhs)
+  (:documentation "returns a unifying SUBSTITUTION, or throws an error"))
 
 (defmethod unify ((lhs hm:->) (rhs hm:->))
   (let* ((input-subst (unify (->-input lhs) (->-input rhs)))

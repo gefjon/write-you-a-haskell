@@ -3,15 +3,17 @@
 (deftype substitution ()
   '(trivial-types:association-list hm:type-variable hm:type))
 
+(defparameter *empty-substitution* ())
+
 (declaim (ftype (function (hm:type-variable hm:type) substitution)
                 singleton-subst))
 (defun singleton-subst (tvar type)
   (acons tvar type ()))
 
-(declaim (ftype (function (substitution substitution) substitution)
+(declaim (ftype (function (substitution &rest substitution) substitution)
                 compose))
-(defun compose (enclosing inner)
-  (concatenate 'list enclosing inner))
+(defun compose (enclosing &rest inner)
+  (apply #'concatenate 'list enclosing inner))
 
 (defgeneric apply-subst (substitution target))
 
