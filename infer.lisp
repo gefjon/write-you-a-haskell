@@ -1,47 +1,53 @@
 (in-package :write-you-a-haskell)
 
-(defgeneric infer (type-env expr)
-  (:documentation "returns (VALUES SUBSTITUTION HM:TYPE)"))
+(gefjon-utils:defstruct constraint
+  ((lhs hm:type)
+   (rhs hm:type)))
 
-(defmethod infer (type-env (expr hm:variable))
-  (values *empty-substitution*
-          (type-env-lookup type-env expr)))
+(defgeneric infer (expr &optional type-env)
+  (:documentation "returns (VALUES HM:TYPE (TRIVIAL-TYPES:PROPER-LIST CONSTRAINT))")
+  (:method :around (expr &optional (type-env *empty-type-env*))
+           (call-next-method expr type-env)))
 
-(defmethod infer (type-env (expr hm:funcall))
-  (multiple-value-bind (function-subst function-type) (infer type-env (funcall-function expr))
-    (multiple-value-bind (arg-subst arg-type) (infer (apply-subst function-subst type-env) (funcall-arg expr))
-      (let* ((return-type (new-type-variable))
-             (unif-subst (unify (apply-subst arg-subst function-type)
-                                (make--> arg-type return-type))))
-        (values (compose unif-subst arg-subst function-subst)
-                (apply-subst unif-subst return-type))))))
+(defmethod infer ((expr hm:variable) &optional type-env)
+  (values (type-env-lookup type-env expr)
+          ()))
 
-(defmethod infer (type-env (expr hm:lambda))
-  (let* ((arg-type (new-type-variable))
+(defmethod infer ((expr hm:lambda) &optional type-env)
+  (let* ((arg-type (new-type-variable (lambda-binding expr)))
          (function-env (extend type-env (lambda-binding expr) (make-forall () arg-type))))
-    (multiple-value-bind (subst return-type) (infer function-env (lambda-body expr))
-      (values subst (apply-subst subst (make--> arg-type return-type))))))
+    (multiple-value-bind (return-type constraints) (infer (lambda-body expr) function-env)
+      (values (make--> arg-type return-type)
+              constraints))))
 
-(defmethod infer (type-env (expr hm:let))
-  (multiple-value-bind (bind-subst bind-type) (infer type-env (let-value expr))
-    (let* ((substituted-enclosing-env (apply-subst bind-subst type-env))
-           (bind-scheme (generalize substituted-enclosing-env bind-type))
-           (local-env (extend substituted-enclosing-env (let-binding expr) bind-scheme)))
-      (multiple-value-bind (body-subst body-type) (infer local-env (let-body expr))
-        (values (compose body-subst bind-subst) body-type)))))
+(defmethod infer ((expr hm:funcall) &optional type-env)
+  (multiple-value-bind (function-type function-constraints) (infer (funcall-function expr) type-env)
+    (multiple-value-bind (arg-type arg-constraints) (infer (funcall-arg expr) type-env)
+      (let* ((return-type (new-type-variable))
+             (arrow-constraint (make-constraint function-type
+                                                (make--> arg-type return-type))))
+        (values return-type
+                (concatenate 'list function-constraints arg-constraints (list arrow-constraint)))))))
 
-(defmethod infer (type-env (expr hm:if))
-  (multiple-value-bind (pred-subst pred-type) (infer type-env (if-predicate expr))
-    (multiple-value-bind (then-subst then-type) (infer type-env (if-then-case expr))
-      (multiple-value-bind (else-subst else-type) (infer type-env (if-else-case expr))
-        (let ((return-subst (unify then-type else-type))
-              (pred-bool-subst (unify pred-type *boolean*)))
-          (values (compose return-subst
-                           pred-bool-subst
-                           else-subst
-                           then-subst
-                           pred-subst)
-                  (apply-subst pred-bool-subst then-type)))))))
+(defmethod infer ((expr hm:let) &optional type-env)
+  (multiple-value-bind (bind-type bind-constraint) (infer (let-value expr) type-env)
+    (let* ((bind-scheme (generalize type-env bind-type))
+           (local-env (extend type-env (let-binding expr) bind-scheme)))
+      (multiple-value-bind (body-type body-constraint) (infer (let-body expr) local-env)
+        (values body-type
+                (concatenate 'list bind-constraint body-constraint))))))
+
+(defmethod infer ((expr hm:if) &optional type-env)
+  (multiple-value-bind (pred-type pred-constraint) (infer (if-predicate expr) type-env)
+    (multiple-value-bind (then-type then-constraint) (infer (if-then-case expr) type-env)
+      (multiple-value-bind (else-type else-constraint) (infer (if-else-case expr) type-env)
+        (let ((return-constraint (make-constraint then-type else-type))
+              (pred-bool-constraint (make-constraint pred-type *boolean*)))
+          (values then-type
+                  (concatenate 'list (list return-constraint pred-bool-constraint)
+                               else-constraint
+                               then-constraint
+                               pred-constraint)))))))
 
 (declaim (ftype (function (operator) hm:->)
                 op-type))
@@ -55,17 +61,18 @@
       (hm:/ fixnum->fixnum->fixnum)
       (hm:= fixnum->fixnum->boolean))))
 
-(defmethod infer (type-env (expr hm:binop))
-  (multiple-value-bind (lh-subst lh-type) (infer type-env (binop-lhs expr))
-    (multiple-value-bind (rh-subst rh-type) (infer type-env (binop-rhs expr))
+(defmethod infer ((expr hm:binop) &optional type-env)
+  (multiple-value-bind (lh-type lh-constr) (infer (binop-lhs expr) type-env)
+    (multiple-value-bind (rh-type rh-constr) (infer (binop-rhs expr) type-env)
       (let* ((return-type (new-type-variable))
              (arrow-type (make--> lh-type (make--> rh-type return-type)))
-             (arrow-subst (unify arrow-type (op-type (binop-op expr)))))
-        (values (compose lh-subst rh-subst arrow-subst)
-                (apply-subst arrow-subst return-type))))))
+             (arrow-constr (make-constraint arrow-type (op-type (binop-op expr)))))
+        (values return-type
+                (concatenate 'list lh-constr rh-constr (list arrow-constr)))))))
 
-(defmethod infer (type-env (expr hm:quote))
-  (values *empty-substitution*
-   (etypecase (quote-it expr)
-     (fixnum *fixnum*)
-     (boolean *boolean*))))
+(defmethod infer ((expr hm:quote) &optional type-env)
+  (declare (ignorable type-env))
+  (values (etypecase (quote-it expr)
+            (fixnum *fixnum*)
+            (boolean *boolean*))
+          ()))

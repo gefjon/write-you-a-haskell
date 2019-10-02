@@ -14,6 +14,9 @@
 
 (declaim (ftype (function (&optional (or string symbol hm:type-variable)) hm:type-variable)))
 (defun new-type-variable (&optional (name "type-var"))
-  (let* ((name-sym (if (typep name 'hm:type-variable) (type-variable-name name) name))
+  (let* ((name-sym (typecase name
+                     (hm:type-variable (type-variable-name name))
+                     (hm:variable (variable-name name))
+                     (t name)))
          (name-string (if (typep name-sym 'symbol) (symbol-name name-sym) name-sym)))
     (make-type-variable (gensym name-string))))
