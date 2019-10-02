@@ -18,7 +18,7 @@
                (:file "type-env")
                (:file "substitute")
                (:file "free-type-variables")
-               (:file "unify")
                (:file "instantiate-generalize")
                (:file "infer")
+               (:file "unify")
                (:file "write-you-a-haskell")))
