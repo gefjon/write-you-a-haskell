@@ -4,6 +4,11 @@
   ((lhs hm:type)
    (rhs hm:type)))
 
+(defmethod apply-subst (substitution (target constraint))
+  (with-slots (lhs rhs) target
+    (make-constraint (apply-subst substitution lhs)
+                     (apply-subst substitution rhs))))
+
 (defgeneric infer (expr &optional type-env)
   (:documentation "returns (VALUES HM:TYPE (TRIVIAL-TYPES:PROPER-LIST CONSTRAINT))")
   (:method :around (expr &optional (type-env *empty-type-env*))
