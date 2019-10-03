@@ -11,7 +11,6 @@
 (defparameter *a->b* (make--> *type-a* *type-b*))
 (defparameter *b=boolean* (singleton-subst *type-b* *boolean*))
 (defparameter *a=fixnum* (singleton-subst *type-a* *fixnum*))
-(defparameter *identity-function-scheme* (make-forall (list *type-a*) (make--> *type-a* *type-a*)) "forall a. a -> a")
 (defparameter *identity-type-scheme* (make-forall (list *type-a*) *type-a*) "forall a. a")
 
 (defparameter *compose*
@@ -31,3 +30,8 @@
 (defparameter *compose-solution* (solve *compose-constraints*))
 
 (defparameter *substituted-compose-type* (apply-subst *compose-solution* *compose-type*))
+
+(defparameter *identity-function* (make-lambda *var-a* *var-a*))
+
+(defparameter *identity-function-type* (infer *identity-function*))
+(defparameter *identity-function-type-scheme* (generalize *identity-function-type*))

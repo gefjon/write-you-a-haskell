@@ -10,9 +10,9 @@
     (apply-subst (mapcar #'substitute-plist-cell (forall-bindings scheme))
                  (forall-body scheme))))
 
-(declaim (ftype (function (type-env hm:type) type-scheme)
+(declaim (ftype (function (hm:type &optional type-env) type-scheme)
                 generalize))
-(defun generalize (env type)
+(defun generalize (type &optional (env *empty-type-env*))
   (make-forall (set-difference (free-type-variables type)
                                (free-type-variables env))
                type))

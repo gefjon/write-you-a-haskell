@@ -36,7 +36,7 @@
 
 (defmethod infer ((expr hm:let) &optional type-env)
   (multiple-value-bind (bind-type bind-constraint) (infer (let-value expr) type-env)
-    (let* ((bind-scheme (generalize type-env bind-type))
+    (let* ((bind-scheme (generalize bind-type type-env))
            (local-env (extend type-env (let-binding expr) bind-scheme)))
       (multiple-value-bind (body-type body-constraint) (infer (let-body expr) local-env)
         (values body-type
