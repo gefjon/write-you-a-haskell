@@ -1,11 +1,11 @@
 (in-package :write-you-a-haskell)
 
 (deftype substitution ()
-  '(trivial-types:association-list hm:type-variable hm:type))
+  '(trivial-types:association-list symbol hm:type))
 
 (defparameter *empty-substitution* ())
 
-(declaim (ftype (function (hm:type-variable hm:type) substitution)
+(declaim (ftype (function (symbol hm:type) substitution)
                 singleton-subst))
 (defun singleton-subst (tvar type)
   (acons tvar type ()))
@@ -18,7 +18,7 @@
 (defgeneric apply-subst (substitution target))
 
 ;;; implementations for HM:TYPE
-(defmethod apply-subst (substitution (target hm:type-variable))
+(defmethod apply-subst (substitution (target symbol))
   "if TARGET is bound in SUBSTITUTION, use its type; otherwise, return TARGET"
   (or (cdr (assoc target substitution)) target))
 

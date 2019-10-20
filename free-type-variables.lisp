@@ -4,7 +4,7 @@
 
 ;;; implementations for HM:TYPE
 
-(defmethod free-type-variables ((within hm:type-variable))
+(defmethod free-type-variables ((within symbol))
   (list within))
 
 (defmethod free-type-variables ((within hm:type-primitive))

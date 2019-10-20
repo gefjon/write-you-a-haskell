@@ -1,11 +1,11 @@
 (in-package :write-you-a-haskell)
 
-(declaim (ftype (function (hm:type-variable t) boolean)
+(declaim (ftype (function (symbol t) boolean)
                 type-var-occurs-in-p))
 (defun type-var-occurs-in-p (tvar within)
   (not (not (member tvar (free-type-variables within)))))
 
-(declaim (ftype (function (hm:type-variable hm:type) substitution)
+(declaim (ftype (function (symbol hm:type) substitution)
                 bind))
 (defun bind (tvar type)
   (cond ((eq tvar type) ())
@@ -22,10 +22,10 @@
       (unify (list lh-in lh-out)
              (list rh-in rh-out)))))
 
-(defmethod unify ((lhs hm:type-variable) rhs)
+(defmethod unify ((lhs symbol) rhs)
   (bind lhs rhs))
 
-(defmethod unify (lhs (rhs hm:type-variable))
+(defmethod unify (lhs (rhs symbol))
   (bind rhs lhs))
 
 (defmethod unify ((lhs hm:type-primitive) (rhs hm:type-primitive))

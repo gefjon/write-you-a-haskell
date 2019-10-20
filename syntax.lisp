@@ -7,12 +7,12 @@
   '(member hm:+ hm:- hm:* hm:/ hm:=))
 
 (defenum expr
-    (hm:variable ((name symbol)))
+    symbol
   (hm:funcall ((function expr)
                (arg expr)))
-  (hm:lambda ((binding hm:variable)
+  (hm:lambda ((binding symbol)
               (body expr)))
-  (hm:let ((binding hm:variable)
+  (hm:let ((binding symbol)
            (value expr)
            (body expr)))
   (hm:quote ((it literal)))

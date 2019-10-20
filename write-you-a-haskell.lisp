@@ -2,22 +2,17 @@
 
 (in-package :write-you-a-haskell)
 
-(defparameter *var-a* (make-variable 'a))
-(defparameter *var-b* (make-variable 'b))
-(defparameter *var-c* (make-variable 'c))
-(defparameter *type-a* (make-type-variable 'a))
-(defparameter *type-b* (make-type-variable 'b))
-(defparameter *a->a* (make--> *type-a* *type-a*))
-(defparameter *a->b* (make--> *type-a* *type-b*))
-(defparameter *b=boolean* (singleton-subst *type-b* *boolean*))
-(defparameter *a=fixnum* (singleton-subst *type-a* *fixnum*))
-(defparameter *identity-type-scheme* (make-forall (list *type-a*) *type-a*) "forall a. a")
+(defparameter *a->a* (make--> 'a 'a))
+(defparameter *a->b* (make--> 'a 'b))
+(defparameter *b=boolean* (singleton-subst 'b *boolean*))
+(defparameter *a=fixnum* (singleton-subst 'a *fixnum*))
+(defparameter *identity-type-scheme* (make-forall (list 'a) 'a) "forall a. a")
 
 (defparameter *compose*
-  (make-lambda *var-a*
-               (make-lambda *var-b*
-                            (make-lambda *var-c*
-                                         (make-funcall *var-a* (make-funcall *var-b* *var-c*))))))
+  (hm:lambda a
+    (hm:lambda b
+      (hm:lambda c
+        (hm:funcall a (hm:funcall b c))))))
 
 (defparameter *compose-type-and-constraints*
   (multiple-value-bind (type constraints) (infer *compose*)
@@ -31,7 +26,7 @@
 
 (defparameter *substituted-compose-type* (apply-subst *compose-solution* *compose-type*))
 
-(defparameter *identity-function* (make-lambda *var-a* *var-a*))
+(defparameter *identity-function* (make-lambda 'a 'a))
 
 (defparameter *identity-function-type* (infer *identity-function*))
 (defparameter *identity-function-type-scheme* (generalize *identity-function-type*))

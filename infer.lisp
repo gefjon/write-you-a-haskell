@@ -14,7 +14,7 @@
   (:method :around (expr &optional (type-env *empty-type-env*))
            (call-next-method expr type-env)))
 
-(defmethod infer ((expr hm:variable) &optional type-env)
+(defmethod infer ((expr symbol) &optional type-env)
   (values (type-env-lookup type-env expr)
           ()))
 
