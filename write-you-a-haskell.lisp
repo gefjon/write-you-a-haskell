@@ -15,8 +15,7 @@
         (hm:funcall a (hm:funcall b c))))))
 
 (defparameter *compose-type-and-constraints*
-  (multiple-value-bind (type constraints) (infer *compose*)
-    (list type constraints)))
+  (multiple-value-list (infer *compose*)))
 
 (defparameter *compose-type* (first *compose-type-and-constraints*))
 
